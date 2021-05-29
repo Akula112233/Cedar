@@ -1,9 +1,10 @@
-import { auth } from './firebase.js'
+import { auth, db } from './firebase.js'
 
 export function createNewUser(email, password) {
     return new Promise(async (resolve, reject) => {
         try {
             const userCredential = await auth.createUserWithEmailAndPassword(email, password)
+            await db.collection("users").doc(userCredential.user.uid).set({email});
             resolve({status: "success", user: userCredential.user})
         } catch (error) {
             var errorCode = error.code;

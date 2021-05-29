@@ -3,6 +3,7 @@ import './App.css';
 import 'antd/dist/antd.css';
 import { auth } from './firebase/firebase' 
 import AuthBarrier from './ui/authentication/AuthBarrier'
+import ViewManager from './ui/main/ViewManager'
 import { store, signUserIn } from './redux/redux'
 
 export default class App extends Component {
@@ -34,7 +35,7 @@ export default class App extends Component {
   render() {
     return (
       <div className="App">
-        {!this.state.isSignedIn ? <AuthBarrier /> : undefined}
+        {!this.state.isSignedIn ? <AuthBarrier /> : <ViewManager />}
       </div>
     )
   }
