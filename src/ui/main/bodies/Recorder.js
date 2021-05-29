@@ -1,13 +1,10 @@
-import React, { Component, useState, useEffect } from 'react'
+import React, { Component } from 'react'
 import styled from 'styled-components'
-import { lightTextColor, recordingColorSolid, recordingColorTranslucent, darkTextColor } from '../../colors/colorScheme'
-import { AudioOutlined, EditOutlined, PauseOutlined, DeleteOutlined } from '@ant-design/icons'
-import { Divider, Button, Typography, Alert } from 'antd'
+import { AudioOutlined, EditOutlined,  } from '@ant-design/icons'
+import { Divider, Typography } from 'antd'
 import MicrophoneContainer from './MicrophoneContainer'
-import SpeechRecognition, {useSpeechRecognition} from 'react-speech-recognition'
+import TextContainer from './TextContainer'
 import '../convenience.css'
-
-const { Title } = Typography
 
 const Body = styled.div`
     height: 100%;
@@ -43,6 +40,7 @@ export default class Recorder extends Component {
     constructor(props) {
         super(props)
     
+        this.unsubscribe = undefined
         this.state = {
             type: 0 
         }
@@ -51,14 +49,13 @@ export default class Recorder extends Component {
     changeType = (type) => {
         this.setState({type})
     }
-
-
+   
     render() {
         return (
             <Body>
                 <ControlsWrapper>
                     <DisplayArea>
-                        {this.state.type === 0 ? <MicrophoneContainer></MicrophoneContainer> : undefined}
+                        {(this.state.type === 0 && !this.state.entryCompleted) ? <MicrophoneContainer></MicrophoneContainer> : <TextContainer></TextContainer>}
                     </DisplayArea>
                     <SwitchBox>
                         <AudioOutlined onClick={() => this.changeType(0)} className={`iconStyleLarge ${this.state.type === 0 ? "selectedIcon" : "deselectedIcon"}`} />

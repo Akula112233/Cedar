@@ -14,6 +14,12 @@ export const signUserOut = () => {
     }
 }
 
+export const entryCompleted = () => {
+    return {
+        type: "ENTRY_COMPLETED"
+    }
+}
+
 // Helpers
 function signUserInHelper(state, user) {
     let temp = Object.assign(state)
@@ -28,12 +34,19 @@ function signUserOutHelper(state) {
     return temp;
 }
 
+function entryCompletedHelper(state) {
+    let temp = Object.assign(state);
+    temp.entryCompleted = true;
+    return temp;
+}
+
 // Reducer
 const templateState = {
     projectSettings : {
         isSignedIn: false,
         user: null
-    }
+    },
+    entryCompleted: false
 }
 function mainReducer(state = templateState, action) {
     switch(action.type) {
@@ -41,6 +54,8 @@ function mainReducer(state = templateState, action) {
             return signUserInHelper(state, action.user);
         case "USER_SIGNED_OUT":
             return signUserOutHelper(state);
+        case "ENTRY_COMPLETED":
+            return entryCompletedHelper(state)
         default: 
             return state;
     }
