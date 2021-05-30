@@ -21,7 +21,7 @@ const IconHolder = styled.div`
 `
 
 export default function SideBar(props) {
-    // 0 main, 1 calendar select, 2 line chart select
+    // 0 main, 1 calendar select
     const [option, setOption] = useState(0);
 
     let onClick = (num) => {
@@ -36,9 +36,6 @@ export default function SideBar(props) {
             </IconHolder>
             <IconHolder >
                 <CalendarOutlined onClick={() => onClick(1)} className={`iconStyle ${option === 1 ? "selectedIcon" : "deselectedIcon"}`}></CalendarOutlined>
-            </IconHolder>
-            <IconHolder >
-                <LineChartOutlined onClick={() => onClick(2)} className={`iconStyle ${option === 2 ? "selectedIcon" : "deselectedIcon"}`}></LineChartOutlined>
             </IconHolder>
         </Body>
     )

@@ -27,7 +27,7 @@ export default class App extends Component {
         let dd = String(d.getDate()).padStart(2, '0');
         let mm = String(d.getMonth() + 1).padStart(2, '0');
         let yyyy =  d.getFullYear();
-        const todaysEntryRef = storageRef.child(`${user.uid}/${mm}_${dd}_${yyyy}.mp3`)
+        const todaysEntryRef = storageRef.child(`${user.uid}/${mm}_${dd}_${yyyy}.wav`)
         todaysEntryRef.getDownloadURL().then(url => {
           store.dispatch(entryCompleted(url))
           console.log(url)

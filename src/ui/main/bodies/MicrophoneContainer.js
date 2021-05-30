@@ -6,7 +6,7 @@ import {store, entryCompleted} from '../../../redux/redux'
 import { Divider, Button, Alert } from 'antd'
 import '../convenience.css'
 import { auth, storageRef } from '../../../firebase/firebase'
-import RecordRTC from 'recordrtc'
+import RecordRTC, { MediaStreamRecorder, StereoAudioRecorder } from 'recordrtc'
 
 const MicrophoneContainerWrapper = styled.div`
     display: flex;
@@ -82,12 +82,49 @@ export default class MicrophoneContainer extends React.Component {
     
     onStartRecording = async () => {
         console.log('click')
+
+        let mimeType = "audio/mpeg"
+        let recorderType = MediaStreamRecorder
+        let isMimeTypeSupported = (_mimeType) => {        
+            if (typeof MediaRecorder.isTypeSupported !== 'function') {
+                return true;
+            }
+            return MediaRecorder.isTypeSupported(_mimeType);
+        };
+
+        if(isMimeTypeSupported(mimeType) === false) {
+            console.log(mimeType, 'is not supported.');
+            mimeType = 'audio/ogg';
+        
+            if(isMimeTypeSupported(mimeType) === false) {
+                console.log(mimeType, 'is not supported.');
+                mimeType = 'audio/wav';
+        
+                if(isMimeTypeSupported(mimeType) === false) {
+                    console.log(mimeType, 'is not supported.');
+        
+                    // fallback to WebAudio solution
+                    mimeType = 'audio/wav';
+                    recorderType = StereoAudioRecorder;
+                }
+            }
+        }
+
+        let options = {
+            type: 'audio',
+            numberOfAudioChannels: 1,
+            mimeType: mimeType,
+            recorderType: recorderType,
+            checkForInactiveTracks: true,
+            bufferSize: 16384,
+            audio: true,
+            video: false
+        };
+
+
         if (this.state.microphone === null) {
             try {   
-                const mic = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: false
-                });
+                const mic = await navigator.mediaDevices.getUserMedia(options);
                 this.setState({microphone: mic}, () => {
                     console.log("Set microphone", mic)
                     this.onStartRecording()
@@ -99,12 +136,8 @@ export default class MicrophoneContainer extends React.Component {
             }
             return;
         }
-        let options = {
-            type: 'audio',
-            numberOfAudioChannels: 1,
-            checkForInactiveTracks: true,
-            bufferSize: 16384,
-        };
+
+
 
         if (this.state.recorder !== null) { 
             this.state.recorder.resumeRecording() 
@@ -151,15 +184,15 @@ export default class MicrophoneContainer extends React.Component {
 
 
             let blob = this.state.recorder.getBlob();
-            let file = new File([blob], `${mm}_${dd}_${yyyy}.mp3`, {
-                type: 'audio/mp3'
+            let file = new File([blob], `${mm}_${dd}_${yyyy}.wav`, {
+                type: 'audio/wav'
             })
 
             try {
                 const result = await saveAudioFile(`${mm}_${dd}_${yyyy}`, file)
                 console.log("Successfully saved to Firebase", result)
                 
-                const storageURL = await storageRef.child(`${auth.currentUser.uid}/${mm}_${dd}_${yyyy}.mp3`).getDownloadURL()
+                const storageURL = await storageRef.child(`${auth.currentUser.uid}/${mm}_${dd}_${yyyy}.wav`).getDownloadURL()
                 store.dispatch(entryCompleted(storageURL))
                 this.setState({isSaving: false})
             } catch (e) {
@@ -194,7 +227,7 @@ function saveAudioFile(entryDateString, file) {
     return new Promise(async (resolve, reject) => {
         try {
             const uid = auth.currentUser.uid
-            const location = storageRef.child(`${uid}/${entryDateString}.mp3`)
+            const location = storageRef.child(`${uid}/${entryDateString}.wav`)
             const snapshot = await location.put(file);
             resolve({status: "success", snapshot})
         } catch (e) {
