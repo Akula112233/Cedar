@@ -6,6 +6,7 @@ import { store } from '../../../redux/redux'
 import Visualizer from './Visualizer'
 import moment from 'moment'
 import { v4 as uuidv4 } from 'uuid' 
+import { auth } from '../../../firebase/firebase'
 
 const Body = styled.div`
     height: 100%;
@@ -88,55 +89,60 @@ export default class Calendar extends React.PureComponent {
 
     componentDidMount() {
         this.unsubscribe = store.subscribe(this.onStoreChange);
-        const dummyData = {
-            "Confident": {
-                "sentence": "Please consider this - you have to clear out the main bedroom to use that bathroom.",
-                "confidence": 0.898327,
-                "topics": []
-            },
-            "Analytical": {
-                "sentence": "Please consider this - you have to clear out the main bedroom to use that bathroom. Stairs - lots of them - some had slightly bending wood which caused a minor injury.",
-                "confidence": 0.6359925,
-                "topics": [
-                    "bathroom"
-                ]
-            },
-            "Sadness": {
-                "sentence": "Signs all over the apartment - there are signs everywhere - some helpful - some telling you rules.",
-                "confidence": 0.555144,
-                "topics": []
-            },
-            "Tentative": {
-                "sentence": "Signs all over the apartment - there are signs everywhere - some helpful - some telling you rules. Perhaps some people like this but It negatively affected our enjoyment of the accommodation. Stairs - lots of them - some had slightly bending wood which caused a minor injury.",
-                "confidence": 0.8410679999999999,
-                "topics": [
-                    "enjoyment",
-                    "accommodation"
-                ]
+        const startup = async () => {
+            try {
+                const date = new Date();
+                const dd = String(date.getDate()).padStart(2, '0');
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const yyyy =  date.getFullYear();
+                let url = "https://us-central1-cedar-315121.cloudfunctions.net/firebaseread";
+
+                let data = JSON.stringify({
+                    uid: auth.currentUser.uid,
+                    date: `${mm}/${dd}/${yyyy}`
+                })
+                const immediateResult = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: data
+                })
+                const immediateResultDestructured = await immediateResult.json()
+                console.log(immediateResultDestructured)
+
+                const types = {
+                    anger: "#ED6A5A",
+                    joy: "#B4CEB3",
+                    fear: "#FAD4D8",
+                    sadness: "#88A0A8",
+                    tentative: "#DBD3C9",
+                    analytical: "#D17B88",
+                    confident: "#546A76"
+                }
+
+                if (immediateResultDestructured !==  {}) {
+                    const arr = immediateResultDestructured.emotions
+                    let holdingArray = [];
+                    let keyArray = [];
+                    let dataArray = [];
+                    arr.forEach(emotion => {
+                        const keyP = uuidv4();
+                        holdingArray.push(<Visualizer key={keyP} keyProp={keyP} data={emotion} color={types[emotion.emotion.toLowerCase()]} weight={emotion.confidence} />)
+                        keyArray.push(keyP)
+                        dataArray.push(emotion)
+                    })
+                    this.setState({holdingArray, keyArray, dataArray})
+                }
+
+            } catch (e) {
+                console.error(e)
             }
         }
 
-        const types = {
-            anger: "#ED6A5A",
-            joy: "#B4CEB3",
-            fear: "#FAD4D8",
-            sadness: "#88A0A8",
-            tentative: "#DBD3C9",
-            analytical: "#D17B88",
-            confident: "#546A76"
-        }
+        startup()
         // fetch for today's date
-        const arr = filterData(dummyData)
-        let holdingArray = [];
-        let keyArray = [];
-        let dataArray = [];
-        arr.forEach(c => {
-            const keyP = uuidv4();
-            holdingArray.push(<Visualizer key={keyP} keyProp={keyP} data={c} color={types[c.type]} weight={c.score} />)
-            keyArray.push(keyP)
-            dataArray.push(c)
-        })
-        this.setState({holdingArray, keyArray, dataArray})
+
     }
 
     componentWillUnmount() {
@@ -164,58 +170,53 @@ export default class Calendar extends React.PureComponent {
         this.setState({
             date,
             dateString
-        }, () => {
-            console.log(date, dateString)
+        }, async () => {
+            console.log(dateString, "check me")
             // Dummy data comes from API, fetch here
-            const dummyData = {
-                "Confident": {
-                    "sentence": "Please consider this - you have to clear out the main bedroom to use that bathroom.",
-                    "confidence": 0.898327,
-                    "topics": []
-                },
-                "Analytical": {
-                    "sentence": "Please consider this - you have to clear out the main bedroom to use that bathroom. Stairs - lots of them - some had slightly bending wood which caused a minor injury.",
-                    "confidence": 0.6359925,
-                    "topics": [
-                        "bathroom"
-                    ]
-                },
-                "Sadness": {
-                    "sentence": "Signs all over the apartment - there are signs everywhere - some helpful - some telling you rules.",
-                    "confidence": 0.555144,
-                    "topics": []
-                },
-                "Tentative": {
-                    "sentence": "Signs all over the apartment - there are signs everywhere - some helpful - some telling you rules. Perhaps some people like this but It negatively affected our enjoyment of the accommodation. Stairs - lots of them - some had slightly bending wood which caused a minor injury.",
-                    "confidence": 0.8410679999999999,
-                    "topics": [
-                        "enjoyment",
-                        "accommodation"
-                    ]
-                }
-            }
+            try {
+                let url = "https://us-central1-cedar-315121.cloudfunctions.net/firebaseread";
 
-            const types = {
-                anger: "#ED6A5A",
-                joy: "#B4CEB3",
-                fear: "#FAD4D8",
-                sadness: "#88A0A8",
-                tentative: "#DBD3C9",
-                analytical: "#D17B88",
-                confident: "#546A76"
+                let data = JSON.stringify({
+                    uid: auth.currentUser.uid,
+                    date: dateString
+                })
+                const immediateResult = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: data
+                })
+                const immediateResultDestructured = await immediateResult.json()
+
+                const types = {
+                    anger: "#ED6A5A",
+                    joy: "#B4CEB3",
+                    fear: "#FAD4D8",
+                    sadness: "#88A0A8",
+                    tentative: "#DBD3C9",
+                    analytical: "#D17B88",
+                    confident: "#546A76"
+                }
+
+
+                if (immediateResultDestructured !==  {}) {
+                    const arr = immediateResultDestructured.emotions
+                    let holdingArray = [];
+                    let keyArray = [];
+                    let dataArray = [];
+                    arr.forEach(emotion => {
+                        const keyP = uuidv4();
+                        holdingArray.push(<Visualizer key={keyP} keyProp={keyP} data={emotion} color={types[emotion.emotion.toLowerCase()]} weight={emotion.confidence} />)
+                        keyArray.push(keyP)
+                        dataArray.push(emotion)
+                    })
+                    this.setState({holdingArray, keyArray, dataArray})
+                }
+            } catch (e) {
+                console.log('fail')
+                console.log(e)
             }
-    
-            const arr = filterData(dummyData)
-            let holdingArray = [];
-            let keyArray = [];
-            let dataArray = [];
-            arr.forEach(c => {
-                const keyP = uuidv4();
-                holdingArray.push(<Visualizer key={keyP} keyProp={keyP} data={c} color={types[c.type]} weight={c.score} />)
-                keyArray.push(keyP)
-                dataArray.push(c)
-            })
-            this.setState({holdingArray, keyArray, dataArray})
         })
     }   
     
@@ -245,7 +246,7 @@ export default class Calendar extends React.PureComponent {
                         </VisualizerContainer>
                         <VisualizerDescription>
                             {this.state.currentDescriptionHolder === null ? <DescriptionEmpty>Select an emotion sphere to start</DescriptionEmpty> : 
-                            <CalendarDescriptionBlock sentence={this.state.currentDescriptionHolder.sentence} topics={this.state.currentDescriptionHolder.topics} color={types[this.state.currentDescriptionHolder.type]} title={this.state.currentDescriptionHolder.type} />
+                            <CalendarDescriptionBlock sentence={this.state.currentDescriptionHolder.sentence} topics={this.state.currentDescriptionHolder.topics} color={types[this.state.currentDescriptionHolder.emotion.toLowerCase()]} title={this.state.currentDescriptionHolder.emotion.toLowerCase()} />
                             }
                         </VisualizerDescription>
                     </CedarContainer>
@@ -253,20 +254,6 @@ export default class Calendar extends React.PureComponent {
             </Body>
         )
     }
-}
-
-function filterData(data) {
-    let arr = [];
-    for (const property in data) {
-        arr.push({
-            type: property.toLowerCase(),
-            score: data[property].confidence,
-            topics: data[property].topics,
-            sentence: data[property].sentence
-        })
-    }
-
-    return arr;
 }
 
 

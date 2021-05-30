@@ -2,8 +2,9 @@ import React from 'react'
 import styled from 'styled-components'
 import { lightTextColor, recordingColorSolid, recordingColorTranslucent, darkTextColor } from '../../colors/colorScheme'
 import {  PauseOutlined, DeleteOutlined } from '@ant-design/icons'
-import {store, entryCompleted} from '../../../redux/redux'
+import {store, entryCompleted, setFinalTranscript} from '../../../redux/redux'
 import { Divider, Button, Alert } from 'antd'
+import $ from 'jquery'
 import '../convenience.css'
 import { auth, storageRef } from '../../../firebase/firebase'
 import RecordRTC, { MediaStreamRecorder, StereoAudioRecorder } from 'recordrtc'
@@ -192,7 +193,54 @@ export default class MicrophoneContainer extends React.Component {
                 const result = await saveAudioFile(`${mm}_${dd}_${yyyy}`, file)
                 console.log("Successfully saved to Firebase", result)
                 
+
                 const storageURL = await storageRef.child(`${auth.currentUser.uid}/${mm}_${dd}_${yyyy}.wav`).getDownloadURL()
+
+
+                let data = JSON.stringify({
+                    link: storageURL
+                })
+                let url = "https://us-central1-cedar-315121.cloudfunctions.net/speechapi";
+                const responseTranscriptStream = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: data
+                })
+                const reponseTranscriptBody = await responseTranscriptStream.json();
+                store.dispatch(setFinalTranscript(reponseTranscriptBody.result))
+                console.log(reponseTranscriptBody.result, "Check if I'm a string")
+
+
+                let emotionalURL = "https://us-central1-cedar-315121.cloudfunctions.net/analyze_emotion"
+                const responseEmotion = await fetch(emotionalURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: reponseTranscriptBody.result
+                })
+
+                const responseEmotionBody = await responseEmotion.json();
+                console.log(responseEmotionBody, 'Response from emotion api')
+
+
+
+                let backendUpdateURL = "https://us-central1-cedar-315121.cloudfunctions.net/firebase"
+                let backUpdateData = JSON.stringify({
+                    uid: auth.currentUser.uid,
+                    recordingLink: storageURL,
+                    emotions: responseEmotionBody
+                })
+                await fetch(backendUpdateURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: backUpdateData
+                }) 
+
                 store.dispatch(entryCompleted(storageURL))
                 this.setState({isSaving: false})
             } catch (e) {
