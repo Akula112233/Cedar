@@ -30,7 +30,25 @@ def call_tone_analyzer(baseText):
 
 
 def sentence_combiner(toneAnalysis):
-    print(toneAnalysis["sentences_tone"])
+    mydict = {}
+    count = []
+    for i in toneAnalysis["sentences_tone"]:
+        for j in i["tones"]:
+            key = j["tone_name"]
+            if (key in mydict.keys()):
+                mydict.update({key: {"sentence": mydict[key]["sentence"] + " " + i["text"],
+                                     "confidence": mydict[key]["confidence"] + j["score"]}})
+                count[list(mydict.keys()).index(key)] += 1
+            else:
+                mydict.update({key: {"sentence": i["text"], "confidence": j["score"]}})
+                count.append(1)
+    index = 0;
+    keys = list(mydict.keys())
+    for i in keys:
+        mydict[i]["confidence"] /= count[index]
+        index += 1
+    return mydict
+    '''
     return {
             "Confident": {
                     "sentence": "Please consider this - you have to clear out the main bedroom to use that bathroom.",
@@ -49,6 +67,7 @@ def sentence_combiner(toneAnalysis):
                 "confidence": 0.5683,
             }
     }
+    '''
 
 
 def topic_analysis(combinedSentences):
