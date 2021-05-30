@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { store  } from '../../../redux/redux'
+import { store, setFinalTranscript } from '../../../redux/redux'
 import { DeleteOutlined } from '@ant-design/icons'
 import { Divider, Button, Input } from 'antd'
 import { lightTextColor } from '../../colors/colorScheme'
@@ -58,7 +58,7 @@ export default function TextContainer() {
     }
 
     const finalEntrySubmit = () => {
-        console.log(store.getState())
+        store.dispatch(setFinalTranscript())
     }
 
     const resetText = () => {

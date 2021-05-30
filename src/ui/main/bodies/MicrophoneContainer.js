@@ -90,6 +90,7 @@ export default class MicrophoneContainer extends React.Component {
                 });
                 this.setState({microphone: mic}, () => {
                     console.log("Set microphone", mic)
+                    this.onStartRecording()
                 })
                 
             } catch (e) {
@@ -141,14 +142,15 @@ export default class MicrophoneContainer extends React.Component {
     }
 
     saveRecordingFinal = () => {
-        this.state.recorder.stopRecording(async function()  {
+        this.setState({isSaving: true})
+        this.state.recorder.stopRecording(async () =>  {
             let d = new Date();
             let dd = String(d.getDate()).padStart(2, '0');
             let mm = String(d.getMonth() + 1).padStart(2, '0');
             let yyyy =  d.getFullYear();
 
 
-            let blob = this.getBlob();
+            let blob = this.state.recorder.getBlob();
             let file = new File([blob], `${mm}_${dd}_${yyyy}.mp3`, {
                 type: 'audio/mp3'
             })
@@ -156,9 +158,12 @@ export default class MicrophoneContainer extends React.Component {
             try {
                 const result = await saveAudioFile(`${mm}_${dd}_${yyyy}`, file)
                 console.log("Successfully saved to Firebase", result)
-                store.dispatch(entryCompleted())
+                
+                const storageURL = await storageRef.child(`${auth.currentUser.uid}/${mm}_${dd}_${yyyy}.mp3`).getDownloadURL()
+                store.dispatch(entryCompleted(storageURL))
+                this.setState({isSaving: false})
             } catch (e) {
-                console.log("Error saving your audio to Firebase")
+                console.log("Error saving your audio to Firebase or with retrieving its url")
                 console.error(e)
             }
         })
@@ -177,7 +182,7 @@ export default class MicrophoneContainer extends React.Component {
                 <RecordingButtonOuter>{isRecording ? <PauseOutlined onClick={this.onPauseRecording} className="iconStyleSmall"></PauseOutlined>: <RecordingButtonInactive onClick={this.onStartRecording}></RecordingButtonInactive>}</RecordingButtonOuter>
                 <Divider style={{margin: 0, marginTop: "15px", minWidth: 0, width: "300px"}}></Divider>
                 <SavingWrapper> 
-                    <Button onClick={this.saveRecordingFinal} type="default">Save Recording</Button>
+                    <Button loading={this.state.isSaving} onClick={this.saveRecordingFinal} type="default">Save Recording</Button>
                     <Button onClick={this.resetRecording} style={{marginLeft: "10px"}} danger icon={<DeleteOutlined />}></Button>
                 </SavingWrapper>
             </MicrophoneContainerWrapper>

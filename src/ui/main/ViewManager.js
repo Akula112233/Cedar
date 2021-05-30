@@ -4,6 +4,9 @@ import { cardBackground } from '../colors/colorScheme'
 import SideBar from './SideBar'
 import TopBar from './TopBar'
 import Recorder from './bodies/Recorder'
+import EntryCompleted from './bodies/EntryCompleted'
+import Calendar from './bodies/Calendar'
+import {store} from '../../redux/redux'
 
 
 const Background = styled.div`
@@ -31,16 +34,29 @@ const BodyContainers = styled.div`
 export default class ViewManager extends Component {
     constructor(props) {
         super(props)
-
+        this.unsubscribe = undefined
         this.setCurrentView = this.setCurrentView.bind(this)
         this.state = {
-            currentView: 0
+            currentView: 0,
+            entryCompleted: false
         }
     }
     
     setCurrentView(view) {
         // 0 is home, 1 is calendar, 2 is graph
         this.setState({currentView: view})
+    }
+
+    componentDidMount() {
+        this.unsubscribe = store.subscribe(this.subscribeToStore)
+    }
+
+    subscribeToStore = () => {
+        if (store.getState().entryCompleted) {
+            this.setState({
+                entryCompleted: true
+            })
+        }
     }
 
     render() {
@@ -50,7 +66,9 @@ export default class ViewManager extends Component {
                 <MainContainer>
                     <TopBar></TopBar>
                     <BodyContainers>
-                        {this.state.currentView === 0 ? <Recorder /> : undefined}
+                        {(this.state.currentView === 0 && !this.state.entryCompleted) ? <Recorder /> : undefined}
+                        {(this.state.currentView === 0 && this.state.entryCompleted) ? <EntryCompleted /> : undefined}
+                        {this.state.currentView === 1 ? <Calendar /> : undefined}
                     </BodyContainers>
                 </MainContainer>
             </Background>

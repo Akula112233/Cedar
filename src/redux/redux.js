@@ -14,9 +14,24 @@ export const signUserOut = () => {
     }
 }
 
-export const entryCompleted = () => {
+export const entryCompleted = (url) => {
     return {
-        type: "ENTRY_COMPLETED"
+        type: "ENTRY_COMPLETED",
+        url
+    }
+}
+
+export const setFinalTranscript = (text) => {
+    return {
+        type: "SET_FINAL_TRANSCRIPT",
+        text
+    }
+}
+
+export const selectId = (id) => {
+    return {
+        type: "SELECT_ID",
+        id
     }
 }
 
@@ -34,9 +49,23 @@ function signUserOutHelper(state) {
     return temp;
 }
 
-function entryCompletedHelper(state) {
+function entryCompletedHelper(state, url) {
     let temp = Object.assign(state);
     temp.entryCompleted = true;
+    temp.entryURL = url;
+    return temp;
+}
+
+function setFinalTranscriptHelper(state, text) {
+    let temp = Object.assign(state);
+    temp.entryCompleted = true;
+    temp.finalTranscript = text;
+    return temp;
+}
+
+function selectIdHelper(state, id) {
+    let temp = Object.assign(state)
+    temp.selectedId = id;
     return temp;
 }
 
@@ -46,7 +75,10 @@ const templateState = {
         isSignedIn: false,
         user: null
     },
-    entryCompleted: false
+    finalTranscript: "",
+    entryCompleted: false,
+    entryURL: "",
+    selectedId: ""
 }
 function mainReducer(state = templateState, action) {
     switch(action.type) {
@@ -55,7 +87,11 @@ function mainReducer(state = templateState, action) {
         case "USER_SIGNED_OUT":
             return signUserOutHelper(state);
         case "ENTRY_COMPLETED":
-            return entryCompletedHelper(state)
+            return entryCompletedHelper(state, action.url)
+        case "SET_FINAL_TRANSCRIPT":
+            return setFinalTranscriptHelper(state, action.text)
+        case "SELECT_ID":
+            return selectIdHelper(state, action.id)
         default: 
             return state;
     }
