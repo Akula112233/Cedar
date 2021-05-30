@@ -188,7 +188,6 @@ export default class Calendar extends React.PureComponent {
                     body: data
                 })
                 const immediateResultDestructured = await immediateResult.json()
-
                 const types = {
                     anger: "#ED6A5A",
                     joy: "#B4CEB3",
@@ -202,6 +201,7 @@ export default class Calendar extends React.PureComponent {
 
                 if (immediateResultDestructured !==  {}) {
                     const arr = immediateResultDestructured.emotions
+                    console.log(arr)
                     let holdingArray = [];
                     let keyArray = [];
                     let dataArray = [];
