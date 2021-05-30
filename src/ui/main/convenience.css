@@ -1,0 +1,39 @@
+.iconStyle {
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.1s;
+}
+
+.iconStyleLarge {
+    font-size: 25px;
+    cursor: pointer;
+    transition: color 0.1s;
+}
+
+.iconStyleSmall {
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.1s;
+    color: rgba(195, 66, 63, 0.8);
+}
+
+.iconStyleSmall:hover {
+    color: rgba(195, 66, 63, 1);
+}
+
+.iconStyle:hover {
+    color: rgb(58, 24, 0);
+}
+
+.iconStyleLarge:hover {
+    color: rgb(58, 24, 0);
+}
+
+.selectedIcon {
+    color: rgb(58, 24, 0);
+}
+
+.deselectedIcon {
+    color: rgba(58, 24, 0, 0.4);
+}
+
