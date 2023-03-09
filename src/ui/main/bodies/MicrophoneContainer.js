@@ -228,6 +228,7 @@ export default class MicrophoneContainer extends React.Component {
 
 
 
+
                 let backendUpdateURL = "https://us-central1-cedar-315121.cloudfunctions.net/firebase"
                 let backUpdateData = JSON.stringify({
                     uid: auth.currentUser.uid,
