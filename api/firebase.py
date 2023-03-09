@@ -7,7 +7,8 @@ from flask import Flask, request, Response
 
 app = Flask(__name__)
 
-cred = credentials.Certificate("cedar-b2b1f-firebase-adminsdk-3x51w-0a9678a7de.json")
+cred = credentials.Certificate("cedar-b2b1f-0a801dae6d5f.json")
+# cred = credentials.Certificate("cedar-b2b1f-firebase-adminsdk-3x51w-0a9678a7de.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 

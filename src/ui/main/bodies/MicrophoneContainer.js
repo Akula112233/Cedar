@@ -213,7 +213,8 @@ export default class MicrophoneContainer extends React.Component {
                 console.log(reponseTranscriptBody.result, "Check if I'm a string")
 
 
-                let emotionalURL = "https://us-central1-cedar-315121.cloudfunctions.net/analyze_emotion"
+                // let emotionalURL = "https://us-central1-cedar-315121.cloudfunctions.net/analyze_emotion"
+                let emotionalURL = ""
                 const responseEmotion = await fetch(emotionalURL, {
                     method: 'POST',
                     headers: {
